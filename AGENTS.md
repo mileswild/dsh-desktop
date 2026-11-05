@@ -107,3 +107,9 @@ git diff --check
 - 涉及启动、IPC、UI、安装迁移、更新或打包，补充对应真实流程验收。Windows 路径/进程/安装行为必须有 Windows 验证；其他平台通过不能代替。
 - 发版遵循 release runbook 和目标原生构建脚本，不绕过 `verify-target`。PR 检查通过或本地打包成功不等于正式发布。
 - 交付写清改动、原因、实际运行的检查、未完成的验收与限制。不得把尚未执行的检查写成通过。
+
+### Linux 上的 Cloud Agent
+
+Cloud Agent 虚拟机是 Linux x64。这里可以完成 `npm ci`、`npm run ppt:build` 和 `npm run typecheck`。`npm run dev`、`npm run build` 和 `npm test` 会先执行 `office:prepare`；Office 运行时只锁定 macOS 与 Windows，在 `linux/x64` 上准备阶段会失败。应用仍可启动，Office 模板接口会降级。
+
+在 Linux 上启动开发界面时，跳过 `office:prepare`，使用已经生成的 PPT 运行时，并在虚拟显示上运行 `npx electron-vite dev`。嵌套容器里的 Chromium 沙箱经常无法初始化，这个开发进程需要 `ELECTRON_DISABLE_SANDBOX=1` 和 `--no-sandbox`、`--disable-gpu`。渲染进程配置里的 `sandbox: true` 保持不变。用独立的 `DSH_DEV_PROFILE` 与空闲的 `DSH_DEV_HARNESS_PORT`、`DSH_DEV_MOBILE_PORT`。Harness 就绪以日志里的 `Harness is ready` 和 `127.0.0.1` 上带会话 cookie 的 HTTP 200 为准。
